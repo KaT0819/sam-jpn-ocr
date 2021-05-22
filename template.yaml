@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  python3.8
+
+  Sample SAM Template for jpn-ocr
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+
+Resources:
+  # OCR用の画像アップロード先のバケット
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: jpn-ocr-20210521
+
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Events:
+        # S3へのアップロードをトリガーとする設定
+        PutObject:
+          Type: S3
+          Properties:
+            Bucket: 
+              Ref: Bucket
+            Events: s3:ObjectCreated:*
+      Policies:
+        - S3ReadPolicy:
+            BucketName: jpn-ocr-20210521
+
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./function
+      DockerTag: python3.8-v1
